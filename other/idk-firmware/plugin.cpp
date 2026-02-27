@@ -10,6 +10,7 @@ void plotBegin();
 void plotLoop();
 void cube3dBegin();
 void cube3dLoop();
+void tetrisRun();
 } // namespace idk_firmware
 
 namespace {
@@ -17,7 +18,8 @@ namespace {
 void runIdkLoop(void (*beginFn)(), void (*loopFn)()) {
     beginFn();
     while (1) {
-        if (check(EscPress) || check(LongPress)) break;
+        // Avoid exiting on Prev/Esc so apps can use navigation keys.
+        if (SelPress && EscPress) break;
         loopFn();
         if (returnToMenu) break;
         delay(10);
@@ -32,3 +34,8 @@ void idk_firmware_run_drawing() { runIdkLoop(idk_firmware::drawingBegin, idk_fir
 void idk_firmware_run_plot() { runIdkLoop(idk_firmware::plotBegin, idk_firmware::plotLoop); }
 
 void idk_firmware_run_cube3d() { runIdkLoop(idk_firmware::cube3dBegin, idk_firmware::cube3dLoop); }
+
+void idk_firmware_run_tetris() {
+    idk_firmware::tetrisRun();
+    returnToMenu = true;
+}

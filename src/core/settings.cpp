@@ -882,7 +882,8 @@ void setClock() {
         updateClockTimezone();
 
     } else {
-        int hr, mn, am;
+        int hr, mn;
+        int am = 0;
         options = {};
         for (int i = 0; i < 12; i++) {
             String tmp = String(i < 10 ? "0" : "") + String(i);
@@ -890,6 +891,7 @@ void setClock() {
         }
 
         hr = loopOptions(options, MENU_TYPE_SUBMENU, "Set Hour");
+        if (hr < 0) return;
         options.clear();
 
         for (int i = 0; i < 60; i++) {
@@ -898,6 +900,7 @@ void setClock() {
         }
 
         mn = loopOptions(options, MENU_TYPE_SUBMENU, "Set Minute");
+        if (mn < 0) return;
         options.clear();
 
         options = {
@@ -905,7 +908,9 @@ void setClock() {
             {"PM", [&]() { am = 12; }},
         };
 
-        loopOptions(options);
+        int amIdx = loopOptions(options);
+        if (amIdx < 0) return;
+        am = (amIdx == 1) ? 12 : 0;
 
 #if defined(HAS_RTC)
         TimeStruct.Hours = hr + am;
@@ -957,13 +962,24 @@ void runClockLoop(bool showMenuHint) {
 
     for (;;) {
         if (millis() - tmp > 1000) {
+            struct tm currentTime = {};
+            bool hasSystemTime = false;
+            time_t now = time(nullptr);
+            if (now > 100000) {
+                localtime_r(&now, &currentTime);
+                hasSystemTime = true;
+            }
+
 #if defined(HAS_RTC)
-            updateTimeStr(_rtc.getTimeStruct());
+            if (!hasSystemTime) currentTime = _rtc.getTimeStruct();
 #else
-            updateTimeStr(rtc.getTimeStruct());
+            if (!hasSystemTime) currentTime = rtc.getTimeStruct();
 #endif
-            Serial.print("Current time: ");
-            Serial.println(timeStr);
+            updateTimeStr(currentTime);
+
+            char dateStr[20];
+            strftime(dateStr, sizeof(dateStr), "%d/%m/%Y", &currentTime);
+
             tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
             tft.drawRect(
                 BORDER_PAD_X,
@@ -981,6 +997,8 @@ void runClockLoop(bool showMenuHint) {
             }
             tft.setTextSize(f_size);
             tft.drawCentreString(timeStr, tftWidth / 2, tftHeight / 2 - 13, 1);
+            tft.setTextSize(1);
+            tft.drawCentreString(dateStr, tftWidth / 2, tftHeight / 2 + 10, 1);
 
             // "OK to show menu" hint management
             if (hintVisible && (millis() - hintStartTime < 5000)) {

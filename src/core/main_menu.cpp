@@ -7,9 +7,6 @@ MainMenu::MainMenu() {
     _menuItems = {
         &wifiMenu,
         &bleMenu,
-#if !defined(LITE_VERSION)
-        &ethernetMenu,
-#endif
         &irMenu,
         &fileMenu,
         &nrf24Menu,

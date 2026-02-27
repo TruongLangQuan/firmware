@@ -6,7 +6,6 @@
 #include "core/wifi/wg.h"
 #include "core/wifi/wifi_common.h"
 #include "core/wifi/wifi_mac.h"
-#include "modules/ethernet/ARPScanner.h"
 #include "modules/wifi/ap_info.h"
 #include "modules/wifi/clients.h"
 #include "modules/wifi/evil_portal.h"
@@ -89,20 +88,6 @@ void WifiMenu::optionsMenu() {
                            snifferOptions.push_back({"Back", [this]() { optionsMenu(); }});
 
                            loopOptions(snifferOptions, MENU_TYPE_SUBMENU, "Sniffers");
-                       }});
-    options.push_back({"Scan Hosts", [=]() {
-                           bool doScan = true;
-                           if (!wifiConnected) doScan = wifiConnectMenu();
-
-                           if (doScan) {
-                               esp_netif_t *esp_netinterface =
-                                   esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-                               if (esp_netinterface == nullptr) {
-                                   Serial.println("Failed to get netif handle");
-                                   return;
-                               }
-                               ARPScanner{esp_netinterface};
-                           }
                        }});
     options.push_back({"Wireguard", wg_setup});
     options.push_back({"Responder", responder});

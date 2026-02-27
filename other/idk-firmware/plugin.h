@@ -4,5 +4,6 @@
 void idk_firmware_run_drawing();
 void idk_firmware_run_plot();
 void idk_firmware_run_cube3d();
+void idk_firmware_run_tetris();
 
 #endif

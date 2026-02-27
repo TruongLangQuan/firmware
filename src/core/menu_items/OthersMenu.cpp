@@ -11,6 +11,7 @@
 #include "modules/others/tururururu.h"
 #include "../../../other/idk-chess/plugin.h"
 #include "../../../other/idk-firmware/plugin.h"
+#include "../../../other/idk-miner/plugin.h"
 // Removed: #include "modules/others/timer.h"
 
 void OthersMenu::optionsMenu() {
@@ -71,9 +72,11 @@ void OthersMenu::micMenu() {
 void OthersMenu::idkAppsMenu() {
     options = {
         {"IDK Chess",   idk_chess_run                                  },
+        {"IDK Miner",   idk_miner_run                                  },
         {"IDK Drawing", idk_firmware_run_drawing                       },
         {"IDK Plot",    idk_firmware_run_plot                          },
         {"IDK Cube3D",  idk_firmware_run_cube3d                        },
+        {"IDK Tetris",  idk_firmware_run_tetris                        },
         {"Back",        [this]() { optionsMenu(); }                    },
     };
 
