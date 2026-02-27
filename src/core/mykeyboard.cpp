@@ -3,7 +3,6 @@
 #include "core/wifi/webInterface.h"
 #include "modules/ir/TV-B-Gone.h"
 #include "modules/ir/custom_ir.h"
-#include "modules/rf/rf_send.h"
 #include "powerSave.h"
 #include "sd_functions.h"
 #include <ArduinoJson.h>

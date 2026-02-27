@@ -10,26 +10,16 @@ MainMenu::MainMenu() {
 #if !defined(LITE_VERSION)
         &ethernetMenu,
 #endif
-        &rfMenu,
-        &rfidMenu,
         &irMenu,
-#if defined(FM_SI4713) && !defined(LITE_VERSION)
-        &fmMenu,
-#endif
         &fileMenu,
-        &gpsMenu,
         &nrf24Menu,
 #if !defined(LITE_VERSION)
 #if !defined(DISABLE_INTERPRETER)
         &scriptsMenu,
 #endif
-        &loraMenu,
 #endif
         &othersMenu,
         &clockMenu,
-#if !defined(LITE_VERSION)
-        &connectMenu,
-#endif
         &configMenu,
     };
 

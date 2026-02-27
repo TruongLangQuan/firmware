@@ -2,7 +2,6 @@
 #include "display.h" // using displayRedStripe as error msg
 #include "modules/badusb_ble/ducky_typer.h"
 #include "modules/bjs_interpreter/interpreter.h"
-#include "modules/gps/wigle.h"
 #include "modules/ir/TV-B-Gone.h"
 #include "modules/ir/custom_ir.h"
 #include "modules/others/audio.h"
@@ -10,7 +9,6 @@
 #include "modules/others/audio_player.h"
 #endif
 #include "modules/others/qrcode_menu.h"
-#include "modules/rf/rf_send.h"
 #include "mykeyboard.h" // using keyboard when calling rename
 #include "passwords.h"
 #include "scrollableTextArea.h"
@@ -748,23 +746,6 @@ String loopSD(FS &fs, bool filePicker, String allowed_ext, String rootPath) {
                         options.insert(options.begin(), {"IR Tx SpamAll", [&]() {
                                                              delay(200);
                                                              txIrFile(&fs, filepath);
-                                                         }});
-                    }
-                    if (filepath.endsWith(".sub"))
-                        options.insert(options.begin(), {"Subghz Tx", [&]() {
-                                                             delay(200);
-                                                             txSubFile(&fs, filepath);
-                                                         }});
-                    if (filepath.endsWith(".csv")) {
-                        options.insert(options.begin(), {"Wigle Upload", [&]() {
-                                                             delay(200);
-                                                             Wigle wigle;
-                                                             wigle.upload(&fs, filepath);
-                                                         }});
-                        options.insert(options.begin(), {"Wigle Up All", [&]() {
-                                                             delay(200);
-                                                             Wigle wigle;
-                                                             wigle.upload_all(&fs, Folder);
                                                          }});
                     }
 #if !defined(LITE_VERSION) && !defined(DISABLE_INTERPRETER)

@@ -9,6 +9,8 @@
 #include "modules/others/mic.h"
 #include "modules/others/qrcode_menu.h"
 #include "modules/others/tururururu.h"
+#include "../../../other/idk-chess/plugin.h"
+#include "../../../other/idk-firmware/plugin.h"
 // Removed: #include "modules/others/timer.h"
 
 void OthersMenu::optionsMenu() {
@@ -28,6 +30,7 @@ void OthersMenu::optionsMenu() {
 #ifndef LITE_VERSION
         {"iButton",      setup_ibutton                },
 #endif
+        {"IDK Apps",     [this]() { idkAppsMenu(); } },
 
         // Timer removed - moved to another "Clock"
     };
@@ -63,6 +66,18 @@ void OthersMenu::micMenu() {
     };
 
     loopOptions(options, MENU_TYPE_SUBMENU, "Microphone");
+}
+
+void OthersMenu::idkAppsMenu() {
+    options = {
+        {"IDK Chess",   idk_chess_run                                  },
+        {"IDK Drawing", idk_firmware_run_drawing                       },
+        {"IDK Plot",    idk_firmware_run_plot                          },
+        {"IDK Cube3D",  idk_firmware_run_cube3d                        },
+        {"Back",        [this]() { optionsMenu(); }                    },
+    };
+
+    loopOptions(options, MENU_TYPE_SUBMENU, "IDK Apps");
 }
 
 void OthersMenu::drawIcon(float scale) {

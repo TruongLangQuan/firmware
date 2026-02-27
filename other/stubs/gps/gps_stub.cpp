@@ -1,0 +1,1 @@
+void gps_update() {}
