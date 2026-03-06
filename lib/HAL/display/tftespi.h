@@ -44,11 +44,13 @@ public:
     using TFT_eSPI::height;
     using TFT_eSPI::init;
     using TFT_eSPI::invertDisplay;
+    using TFT_eSPI::loadFont;
     using TFT_eSPI::print;
     using TFT_eSPI::printf;
     using TFT_eSPI::println;
     using TFT_eSPI::pushImage;
     using TFT_eSPI::setCursor;
+    using TFT_eSPI::setAttribute;
     using TFT_eSPI::setRotation;
     using TFT_eSPI::setSwapBytes;
     using TFT_eSPI::setTextColor;
@@ -58,6 +60,7 @@ public:
     using TFT_eSPI::setTextWrap;
     using TFT_eSPI::sleep;
     using TFT_eSPI::textWidth;
+    using TFT_eSPI::unloadFont;
     using TFT_eSPI::width;
     using TFT_eSPI::write;
     using TFT_eSPI::writecommand;

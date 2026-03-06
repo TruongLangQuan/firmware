@@ -1,13 +1,13 @@
 {
-  "drawing.title": "Ve",
-  "drawing.clear": "Xoa",
-  "plot.title": "Do thi",
-  "plot.enter_function": "Nhap ham",
-  "plot.draw": "Ve",
-  "plot.clear": "Xoa",
-  "cube3d.title": "Khoi 3D",
+  "drawing.title": "Vẽ",
+  "drawing.clear": "Xóa",
+  "plot.title": "Đồ thị",
+  "plot.enter_function": "Nhập hàm",
+  "plot.draw": "Vẽ",
+  "plot.clear": "Xóa",
+  "cube3d.title": "Khối 3D",
   "cube3d.rotate_x": "Xoay X",
   "cube3d.rotate_y": "Xoay Y",
   "cube3d.rotate_z": "Xoay Z",
-  "cube3d.reset": "Dat lai"
+  "cube3d.reset": "Đặt lại"
 }

@@ -1,6 +1,5 @@
 import hashlib
 from typing import TYPE_CHECKING, Any
-import requests
 
 if TYPE_CHECKING:
     Import: Any = None
@@ -93,27 +92,18 @@ def load_checksum_file(input_file):
 
 
 def minify_css(c):
-    minify_req = requests.post(
-        "https://www.toptal.com/developers/cssminifier/api/raw",
-        {"input": c.read().decode('utf-8')},
-    )
-    return c if minify_req is False else minify_req.text.encode('utf-8')
+    # Offline-safe: skip remote minification to comply with no-remote rule.
+    return c.read()
 
 
 def minify_js(js):
-    minify_req = requests.post(
-        'https://www.toptal.com/developers/javascript-minifier/api/raw',
-        {'input': js.read().decode('utf-8')},
-    )
-    return js if minify_req is False else minify_req.text.encode('utf-8')
+    # Offline-safe: skip remote minification to comply with no-remote rule.
+    return js.read()
 
 
 def minify_html(html):
-    minify_req = requests.post(
-        'https://www.toptal.com/developers/html-minifier/api/raw',
-        {'input': html.read().decode('utf-8')},
-    )
-    return html if minify_req is False else minify_req.text.encode('utf-8')
+    # Offline-safe: skip remote minification to comply with no-remote rule.
+    return html.read()
 
 
 # gzip web files

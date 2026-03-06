@@ -171,10 +171,26 @@
       <div class="dialog-head">Settings</div>
       <div class="dialog-body">
         <button class="btn-action act-cred" onclick="Dialog.show('credential')">Change WebUI Credentials</button>
+        <button class="btn-action act-ota-open" onclick="Dialog.show('ota')">Firmware Update (OTA)</button>
         <button class="btn-action act-hide-show-navigating"></button>
         <button class="btn-action act-reboot">Reboot</button>
       </div>
       <div class="dialog-footer">
+        <button class="btn-action act-dialog-close act-escape">Close</button>
+      </div>
+    </div>
+    <div class="dialog ota hidden">
+      <div class="dialog-head">Firmware Update (OTA)</div>
+      <div class="dialog-body">
+        <p class="ota-note">Upload a .bin firmware file to flash. The device will reboot after completion.</p>
+        <input type="file" id="ota-file" accept=".bin,application/octet-stream">
+        <div class="ota-progress">
+          <div class="bar"></div>
+        </div>
+        <div class="ota-status">Idle</div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-action act-ota-start">Start Update</button>
         <button class="btn-action act-dialog-close act-escape">Close</button>
       </div>
     </div>

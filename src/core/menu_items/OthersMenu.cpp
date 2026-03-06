@@ -6,11 +6,12 @@
 #include "modules/bjs_interpreter/interpreter.h"
 #include "modules/others/clicker.h"
 #include "modules/others/ibutton.h"
+#include "modules/others/idk_apps.h"
 #include "modules/others/mic.h"
 #include "modules/others/qrcode_menu.h"
+#include "modules/others/ssh_client.h"
+#include "modules/others/ssid_wordlist_generator.h"
 #include "modules/others/tururururu.h"
-#include "../../../other/idk-chess/plugin.h"
-#include "../../../other/idk-firmware/plugin.h"
 #include "../../../other/idk-miner/plugin.h"
 // Removed: #include "modules/others/timer.h"
 
@@ -31,6 +32,8 @@ void OthersMenu::optionsMenu() {
 #ifndef LITE_VERSION
         {"iButton",      setup_ibutton                },
 #endif
+        {"SSH Client", ssh_client_menu},
+        {"SSID Wordlist Generator", ssid_wordlist_generator_menu},
         {"IDK Apps",     [this]() { idkAppsMenu(); } },
 
         // Timer removed - moved to another "Clock"

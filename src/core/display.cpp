@@ -7,6 +7,7 @@
 #include <JPEGDecoder.h>
 #include <interface.h> //for charging ischarging to print charging indicator
 #include <memory>
+#include <time.h>
 
 #define MAX_MENU_SIZE (int)(tftHeight / 25)
 
@@ -496,9 +497,9 @@ int loopOptions(
                 bruceConfig.setDevMode(true);
                 displayInfo("Dev Mode Enabled", true);
             }
-            if (millis() - _clock_bat_timer > 30000) {
+            if (millis() - _clock_bat_timer > 1000) {
                 _clock_bat_timer = millis();
-                drawStatusBar(); // update clock and battery status each 30s
+                drawStatusBar(); // update clock and battery status each second
             }
         }
 
@@ -810,11 +811,22 @@ void drawStatusBar() {
         int clock_fontsize = 1; // Font size of the clock / BRUCE + BRUCE_VERSION
         setTftDisplay(12, 12, bruceConfig.priColor, clock_fontsize, bruceConfig.bgColor);
         tft.fillRect(12, 12, 100, clock_fontsize * LH, bruceConfig.bgColor);
+        struct tm currentTime = {};
+        bool hasSystemTime = false;
+        time_t now = time(nullptr);
+        if (now > 100000) {
+            struct tm *localNow = localtime(&now);
+            if (localNow != nullptr) {
+                currentTime = *localNow;
+                hasSystemTime = true;
+            }
+        }
 #if defined(HAS_RTC)
-        updateTimeStr(_rtc.getTimeStruct());
+        if (!hasSystemTime) currentTime = _rtc.getTimeStruct();
 #else
-        updateTimeStr(rtc.getTimeStruct());
+        if (!hasSystemTime) currentTime = rtc.getTimeStruct();
 #endif
+        updateTimeStr(currentTime);
         tft.print(timeStr);
     } else {
         setTftDisplay(12, 12, bruceConfig.priColor, 1, bruceConfig.bgColor);

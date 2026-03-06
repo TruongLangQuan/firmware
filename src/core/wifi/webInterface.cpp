@@ -10,6 +10,7 @@
 #include "esp_task_wdt.h"
 #include "webFiles.h"
 #include <MD5Builder.h>
+#include <Update.h>
 #include <cstddef>
 #include <esp32-hal-psram.h>
 #include <esp_heap_caps.h>
@@ -688,6 +689,45 @@ void configureWebServer() {
         HTTP_POST,
         [](AsyncWebServerRequest *request) { request->send(200, "text/plain", "File upload completed"); },
         handleUpload
+    );
+
+    // Firmware update (OTA)
+    server->on(
+        "/update",
+        HTTP_POST,
+        [](AsyncWebServerRequest *request) {
+            if (!checkUserWebAuth(request)) { return; }
+            bool success = !Update.hasError();
+            AsyncWebServerResponse *response =
+                request->beginResponse(success ? 200 : 500, "text/plain", success ? "OK" : "FAIL");
+            response->addHeader("Connection", "close");
+            request->send(response);
+            if (success) {
+                delay(100);
+                ESP.restart();
+            }
+        },
+        [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+            if (!checkUserWebAuth(request)) { return; }
+            if (!index) {
+                log_i("OTA start: %s", filename.c_str());
+                if (!Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH)) {
+                    Update.printError(Serial);
+                }
+            }
+            if (!Update.hasError()) {
+                if (Update.write(data, len) != len) {
+                    Update.printError(Serial);
+                }
+            }
+            if (final) {
+                if (Update.end(true)) {
+                    log_i("OTA success: %uB", static_cast<unsigned>(index + len));
+                } else {
+                    Update.printError(Serial);
+                }
+            }
+        }
     );
 
     // Wi-Fi configuration

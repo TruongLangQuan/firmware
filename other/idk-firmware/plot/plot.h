@@ -114,56 +114,13 @@ private:
 
 // Global instance
 static PlotApp plotApp;
-static bool plotInitialized = false;
-static float plotPhase = 0.0f;
-static int plotFunction = 0;
 
 void plotBegin() {
     plotApp.begin();
-    plotInitialized = true;
-    tft.fillScreen(TFT_BLACK);
 }
 
 void plotLoop() {
-    if (!plotInitialized) plotBegin();
-
-    if (check(PrevPress)) plotPhase -= 0.2f;
-    if (check(NextPress)) plotPhase += 0.2f;
-    if (check(SelPress)) plotFunction = (plotFunction + 1) % 3;
-
-    const int top = 20;
-    const int w = tftWidth;
-    const int h = tftHeight - top;
-    const int midY = top + h / 2;
-
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(1);
-    tft.setCursor(2, 2);
-    tft.print(plotApp.getTitle());
-    tft.setCursor(2, 12);
-    if (plotFunction == 0) tft.print("f(x)=sin(x)");
-    else if (plotFunction == 1) tft.print("f(x)=cos(x)");
-    else tft.print("f(x)=sin(x)*cos(x)");
-
-    tft.drawLine(0, midY, w - 1, midY, TFT_DARKGREY);
-    tft.drawLine(w / 2, top, w / 2, tftHeight - 1, TFT_DARKGREY);
-
-    int prevX = 0;
-    int prevY = midY;
-    for (int x = 0; x < w; ++x) {
-        float xf = ((float)x - (float)(w / 2)) / 24.0f + plotPhase;
-        float yf = 0.0f;
-        if (plotFunction == 0) yf = sinf(xf);
-        else if (plotFunction == 1) yf = cosf(xf);
-        else yf = sinf(xf) * cosf(xf);
-
-        int y = midY - (int)(yf * (h / 2 - 4));
-        y = max(top, min(tftHeight - 1, y));
-        if (x > 0) tft.drawLine(prevX, prevY, x, y, TFT_GREEN);
-        prevX = x;
-        prevY = y;
-    }
+    // Handle plot interactions
 }
 
 } // namespace idk_firmware

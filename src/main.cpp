@@ -212,6 +212,10 @@ void setup_gpio() {
  *********************************************************************/
 void begin_tft() {
     tft.setRotation(bruceConfigPins.rotation); // sometimes it misses the first command
+#ifdef USE_TFT_ESPI
+    // Ensure UTF-8 decoder is enabled for locale strings.
+    tft.setAttribute(UTF8_SWITCH, true);
+#endif
     tft.invertDisplay(bruceConfig.colorInverted);
     tft.setRotation(bruceConfigPins.rotation);
     tftWidth = tft.width();

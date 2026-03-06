@@ -1074,6 +1074,85 @@ $(".act-save-credential").addEventListener("click", async (e) => {
   alert("Credentials saved successfully!");
 });
 
+const otaFileInput = $("#ota-file");
+const otaStartBtn = $(".act-ota-start");
+const otaProgressBar = $(".dialog.ota .ota-progress .bar");
+const otaStatus = $(".dialog.ota .ota-status");
+
+function resetOtaUi() {
+  if (otaProgressBar) otaProgressBar.style.width = "0%";
+  if (otaStatus) {
+    otaStatus.textContent = "Idle";
+    otaStatus.style.color = "var(--color)";
+  }
+  if (otaStartBtn) otaStartBtn.disabled = false;
+  if (otaFileInput) otaFileInput.disabled = false;
+}
+
+function setOtaStatus(message, isError = false) {
+  if (!otaStatus) return;
+  otaStatus.textContent = message;
+  otaStatus.style.color = isError ? "#ff5a5a" : "var(--color)";
+}
+
+if (otaFileInput) {
+  otaFileInput.addEventListener("change", () => {
+    if (otaProgressBar) otaProgressBar.style.width = "0%";
+    setOtaStatus("Ready");
+  });
+}
+
+otaStartBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!otaFileInput || otaFileInput.files.length === 0) {
+    alert("Please select a .bin firmware file.");
+    return;
+  }
+  const file = otaFileInput.files[0];
+  if (!confirm(`Flash firmware "${file.name}" now? The device will reboot.`)) return;
+
+  otaStartBtn.disabled = true;
+  otaFileInput.disabled = true;
+  setOtaStatus("Uploading...");
+
+  const fd = new FormData();
+  fd.append("update", file, file.name);
+
+  let realUrl = "/update";
+  if (IS_DEV) realUrl = "/bruce" + realUrl;
+
+  const req = new XMLHttpRequest();
+  req.upload.onprogress = (e) => {
+    if (e.lengthComputable && otaProgressBar) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      otaProgressBar.style.width = percent + "%";
+    }
+  };
+  req.onload = () => {
+    if (req.status >= 200 && req.status < 300) {
+      if (otaProgressBar) otaProgressBar.style.width = "100%";
+      setOtaStatus("Upload complete. Rebooting...");
+    } else if (req.status === 401) {
+      handleAuthError();
+      setOtaStatus("Unauthorized. Please login again.", true);
+      resetOtaUi();
+    } else {
+      setOtaStatus("Update failed. Check firmware file and try again.", true);
+      resetOtaUi();
+    }
+  };
+  req.onerror = () => {
+    setOtaStatus("Network error during upload.", true);
+    resetOtaUi();
+  };
+  req.onabort = () => {
+    setOtaStatus("Upload aborted.", true);
+    resetOtaUi();
+  };
+  req.open("POST", realUrl, true);
+  req.send(fd);
+});
+
 $(".act-save-edit-file").addEventListener("click", async (e) => {
   await saveEditorFile();
 });

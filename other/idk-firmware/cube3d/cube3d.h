@@ -155,51 +155,13 @@ private:
 
 // Global instance
 static Cube3D cube3d;
-static bool cube3dInitialized = false;
-static bool cube3dAutoToggleLatch = false;
 
 void cube3dBegin() {
     cube3d.begin();
-    cube3dInitialized = true;
-    tft.fillScreen(TFT_BLACK);
 }
 
 void cube3dLoop() {
-    if (!cube3dInitialized) cube3dBegin();
-
-    if (check(PrevPress)) cube3d.setSpeed(max(0.2f, cube3d.getSpeed() - 0.1f));
-    if (check(NextPress)) cube3d.setSpeed(min(4.0f, cube3d.getSpeed() + 0.1f));
-    if (SelPress && !cube3dAutoToggleLatch) {
-        cube3d.setAutoRotate(!cube3d.isAutoRotate());
-        cube3dAutoToggleLatch = true;
-    }
-    if (!SelPress) cube3dAutoToggleLatch = false;
-
     cube3d.update();
-
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(1);
-    tft.setCursor(2, 2);
-    tft.print(cube3d.getTitle());
-    tft.setCursor(2, 12);
-    tft.printf("SPD %.1f | AUTO %s", cube3d.getSpeed(), cube3d.isAutoRotate() ? "ON" : "OFF");
-
-    std::vector<Point3D> vertices = cube3d.getCubeVertices();
-    std::vector<Point2D> projected;
-    projected.reserve(vertices.size());
-    for (auto &v : vertices) {
-        Point3D p = cube3d.transform(v);
-        projected.push_back(cube3d.project(p));
-    }
-
-    for (const auto &edge : cube3d.getCubeEdges()) {
-        const Point2D &a = projected[edge.first];
-        const Point2D &b = projected[edge.second];
-        tft.drawLine(a.x, a.y, b.x, b.y, TFT_CYAN);
-    }
-
-    for (const auto &p : projected) { tft.fillCircle(p.x, p.y, 2, TFT_YELLOW); }
 }
 
 } // namespace idk_firmware

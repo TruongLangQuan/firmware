@@ -342,6 +342,29 @@ svg > g, svg > path {
     display: block;
     padding: 6px 5px;
 }
+.dialog.ota .dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.dialog.ota .ota-note {
+    margin: 0 0 4px 0;
+    font-size: 11px;
+    color: var(--light-color);
+}
+.dialog.ota .ota-progress {
+    position: relative;
+    height: 14px;
+    border: 1px solid var(--color);
+}
+.dialog.ota .ota-progress .bar {
+    width: 0;
+    height: 100%;
+    background-color: var(--light-color);
+}
+.dialog.ota .ota-status {
+    font-weight: bold;
+}
 .dialog.editor {
     width: 100%;
     max-width: 100%;

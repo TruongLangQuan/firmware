@@ -7,17 +7,17 @@ struct I18nEntry {
 };
 
 static const I18nEntry kI18nEntries[] = {
-    {"drawing.title", "Drawing", "Ve"},
-    {"drawing.clear", "Clear", "Xoa"},
-    {"plot.title", "Plot", "Do thi"},
-    {"plot.enter_function", "Enter function", "Nhap ham"},
-    {"plot.draw", "Draw", "Ve"},
-    {"plot.clear", "Clear", "Xoa"},
-    {"cube3d.title", "3D Cube", "Khoi 3D"},
+    {"drawing.title", "Drawing", "Vẽ"},
+    {"drawing.clear", "Clear", "Xóa"},
+    {"plot.title", "Plot", "Đồ thị"},
+    {"plot.enter_function", "Enter function", "Nhập hàm"},
+    {"plot.draw", "Draw", "Vẽ"},
+    {"plot.clear", "Clear", "Xóa"},
+    {"cube3d.title", "3D Cube", "Khối 3D"},
     {"cube3d.rotate_x", "Rotate X", "Xoay X"},
     {"cube3d.rotate_y", "Rotate Y", "Xoay Y"},
     {"cube3d.rotate_z", "Rotate Z", "Xoay Z"},
-    {"cube3d.reset", "Reset", "Dat lai"},
+    {"cube3d.reset", "Reset", "Đặt lại"},
 };
 
 const char *tr(const char *key) {

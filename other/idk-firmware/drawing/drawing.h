@@ -113,44 +113,14 @@ private:
 
 // Global instance
 static DrawingApp drawingApp;
-static bool drawingInitialized = false;
-static int drawingCursorX = 20;
-static int drawingCursorY = 32;
 
 void drawingBegin() {
     drawingApp.begin();
-    drawingInitialized = true;
-    drawingCursorX = tftWidth / 2;
-    drawingCursorY = tftHeight / 2;
-    tft.fillScreen(TFT_BLACK);
 }
 
 void drawingLoop() {
-    if (!drawingInitialized) drawingBegin();
-
-    int oldX = drawingCursorX;
-    int oldY = drawingCursorY;
-
-    if (check(PrevPress)) drawingCursorX = max(2, drawingCursorX - 4);
-    if (check(NextPress)) drawingCursorX = min(tftWidth - 3, drawingCursorX + 4);
-    if (SelPress && PrevPress) drawingCursorY = max(24, drawingCursorY - 4);
-    if (SelPress && NextPress) drawingCursorY = min(tftHeight - 3, drawingCursorY + 4);
-
-    if (check(SelPress)) {
-        drawingApp.startDrawing(drawingCursorX, drawingCursorY);
-        drawingApp.continueDrawing(drawingCursorX, drawingCursorY);
-        tft.fillCircle(drawingCursorX, drawingCursorY, 2, TFT_WHITE);
-    }
-
-    tft.drawPixel(oldX, oldY, TFT_BLACK);
-    tft.drawPixel(drawingCursorX, drawingCursorY, TFT_CYAN);
-
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(1);
-    tft.setCursor(2, 2);
-    tft.print(drawingApp.getTitle());
-    tft.setCursor(2, 12);
-    tft.print("SEL draw | SEL+Prev/Next Y");
+    // Handle input and drawing
+    // This would integrate with M5StickC input handling
 }
 
 } // namespace idk_firmware
