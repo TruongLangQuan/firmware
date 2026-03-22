@@ -1,22 +1,25 @@
 #include "idk_apps.h"
 #include <globals.h>
 #include <interface.h>
+#include <Preferences.h>
 #include <string.h>
 
 namespace {
 
-int tetrisHighScore = 0;
-int tetrisLastScore = 0;
+Preferences scorePrefs;
+const char* SCORE_NS = "scores";
 
 int getScore(const char *key) {
-    if (strcmp(key, "tetris_h") == 0) return tetrisHighScore;
-    if (strcmp(key, "tetris_last") == 0) return tetrisLastScore;
-    return 0;
+    scorePrefs.begin(SCORE_NS, true);
+    int v = scorePrefs.getInt(key, 0);
+    scorePrefs.end();
+    return v;
 }
 
 void setScore(const char *key, int v) {
-    if (strcmp(key, "tetris_h") == 0) tetrisHighScore = v;
-    if (strcmp(key, "tetris_last") == 0) tetrisLastScore = v;
+    scorePrefs.begin(SCORE_NS, false);
+    scorePrefs.putInt(key, v);
+    scorePrefs.end();
 }
 
 struct Tetromino {

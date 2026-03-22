@@ -34,6 +34,8 @@ public:
 
     uint32_t getMaxVisibleTextLength();
 
+    void rebuildLayout();
+
     size_t firstVisibleLine;
     size_t lastVisibleLine;
     /// TODO: Change to std::vector<char *> and alloc to PSRAM if possible

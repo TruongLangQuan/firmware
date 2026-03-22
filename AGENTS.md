@@ -1,0 +1,22 @@
+- BUILD: `pio run -e m5stack-cplus2`
+- FLASH: `pio run -e m5stack-cplus2 -t upload`
+- FS UPLOAD: `pio run -e m5stack-cplus2 -t uploadfs`
+- MONITOR: `pio device monitor -b 115200`
+- BIN MERGE: `pio run -e m5stack-cplus2 -t build-firmware`
+- ALT FLASH: `esptool.py --port <PORT> write_flash 0x00000 Bruce-<env>.bin`
+- TEST: boot -> menu -> WiFi scan/AP -> SD mount -> IR send -> WebUI load
+- SAFE TO EDIT: `embedded_resources/web_interface/*`
+- SAFE TO EDIT: `media/*`
+- SAFE TO EDIT: `sd_files/*`
+- EDIT WITH CAUTION: `src/main.cpp`
+- EDIT WITH CAUTION: `src/core/*`
+- EDIT WITH CAUTION: `src/modules/*`
+- EDIT WITH CAUTION: `include/*`
+- DO NOT EDIT: `boards/*`
+- DO NOT EDIT: `lib/HAL/*`
+- DO NOT EDIT: `lib/TFT_eSPI*`
+- DO NOT EDIT: `pcbs/*`
+- DRIVER RULE: keep `boards/*/*.ini` + `boards/*/pins_arduino.h` aligned with `src/core/configPins.*`
+- DRIVER RULE: validate SD/IR/RF/RFID/NRF24/LoRa/W5500 changes on device
+- DRIVER RULE: avoid long blocking loops in drivers
+- GENERATED: `.pio/`, `release/`, `Bruce-*.bin`

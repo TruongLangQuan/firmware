@@ -8,6 +8,7 @@
 #if defined(HAS_NS4168_SPKR)
 #include "modules/others/audio_player.h"
 #endif
+#include "modules/others/idk_vi_font.h"
 #include "modules/others/qrcode_menu.h"
 #include "mykeyboard.h" // using keyboard when calling rename
 #include "passwords.h"
@@ -866,11 +867,14 @@ void viewFile(FS fs, String filepath) {
     if (!file) return;
 
     ScrollableTextArea area = ScrollableTextArea("VIEW FILE");
+    idk_vi_font_enable();
+    area.rebuildLayout();
     area.fromFile(file);
 
     file.close();
 
     area.show();
+    idk_vi_font_disable();
 }
 
 /*********************************************************************

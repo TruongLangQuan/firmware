@@ -1,0 +1,12 @@
+- Rule: keep board-specific pins in `boards/*/*.ini` and `boards/*/pins_arduino.h`
+- Rule: use `bruceConfigPins` (`src/core/configPins.*`) for runtime pin changes
+- Rule: treat display, SD, IR, RF, RFID, BLE, WiFi, LoRa, W5500 as HIGH RISK zones
+- Rule: avoid long blocking loops; use short delays and yield where possible
+- Rule: avoid dynamic allocation in hot paths; prefer static buffers and PSRAM where available
+- Rule: guard LittleFS/SD operations with explicit mount checks
+- Rule: keep tasks sized for PSRAM vs non‑PSRAM (`precompiler_flags.h`)
+- Rule: avoid board-specific hardcoding in modules; rely on macros + configPins
+- Rule: keep menu changes aligned with `src/core/menu_items/*` and `src/core/main_menu.cpp`
+- Rule: keep web UI assets in `embedded_resources/` and regenerate headers if required
+- Rule: do not modify `lib/*` vendor code unless upstream patch is required
+- Rule: log via `log_d/log_i/log_w/log_e` for consistent diagnostics

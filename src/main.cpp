@@ -212,7 +212,7 @@ void setup_gpio() {
  *********************************************************************/
 void begin_tft() {
     tft.setRotation(bruceConfigPins.rotation); // sometimes it misses the first command
-#ifdef USE_TFT_ESPI
+#if defined(HAS_SCREEN) && defined(UTF8_SWITCH)
     // Ensure UTF-8 decoder is enabled for locale strings.
     tft.setAttribute(UTF8_SWITCH, true);
 #endif
