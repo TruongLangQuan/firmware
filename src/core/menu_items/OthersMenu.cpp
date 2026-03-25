@@ -7,6 +7,9 @@
 #include "modules/others/clicker.h"
 #include "modules/others/ibutton.h"
 #include "modules/others/idk_apps.h"
+#include "modules/others/math_cloud_bridge.h"
+#include "modules/others/video_stream_bridge.h"
+#include "modules/others/hardware_tools.h"
 #include "modules/others/mic.h"
 #include "modules/others/qrcode_menu.h"
 #include "modules/others/ssh_client.h"
@@ -80,6 +83,9 @@ void OthersMenu::idkAppsMenu() {
         {"IDK Plot",    idk_firmware_run_plot                          },
         {"IDK Cube3D",  idk_firmware_run_cube3d                        },
         {"IDK Tetris",  idk_firmware_run_tetris                        },
+        {"Math Cloud",  math_cloud_run                                 },
+        {"Video Stream", video_stream_run                              },
+        {"Hardware Tools", hardware_tools_menu                         },
         {"Back",        [this]() { optionsMenu(); }                    },
     };
 

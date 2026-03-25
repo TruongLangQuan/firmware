@@ -759,6 +759,15 @@ const char *ntpServer = "pool.ntp.org";
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, ntpServer, 0, 0);
 
+static int daysInMonth(int year, int month) {
+    if (month < 1 || month > 12) return 30;
+    static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int dim = days[month - 1];
+    bool leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+    if (month == 2 && leap) dim = 29;
+    return dim;
+}
+
 void setClock() {
 #if defined(HAS_RTC)
     RTC_TimeTypeDef TimeStruct;
@@ -882,16 +891,24 @@ void setClock() {
         updateClockTimezone();
 
     } else {
-        int hr, mn;
-        int am = 0;
+        int hrSel = 0, mn = 0;
+        int hr24 = 0;
+        int amIdx = 0;
         options = {};
-        for (int i = 0; i < 12; i++) {
-            String tmp = String(i < 10 ? "0" : "") + String(i);
-            options.push_back({tmp.c_str(), [&]() { delay(1); }});
+        if (bruceConfig.clock24hr) {
+            for (int i = 0; i < 24; i++) {
+                String tmp = String(i < 10 ? "0" : "") + String(i);
+                options.push_back({tmp.c_str(), [&]() { delay(1); }});
+            }
+        } else {
+            for (int i = 1; i <= 12; i++) {
+                String tmp = String(i < 10 ? "0" : "") + String(i);
+                options.push_back({tmp.c_str(), [&]() { delay(1); }});
+            }
         }
 
-        hr = loopOptions(options, MENU_TYPE_SUBMENU, "Set Hour");
-        if (hr < 0) return;
+        hrSel = loopOptions(options, MENU_TYPE_SUBMENU, "Set Hour");
+        if (hrSel < 0) return;
         options.clear();
 
         for (int i = 0; i < 60; i++) {
@@ -903,20 +920,70 @@ void setClock() {
         if (mn < 0) return;
         options.clear();
 
-        options = {
-            {"AM", [&]() { am = 0; } },
-            {"PM", [&]() { am = 12; }},
-        };
+        if (!bruceConfig.clock24hr) {
+            options = {
+                {"AM", [&]() { delay(1); }},
+                {"PM", [&]() { delay(1); }},
+            };
+            amIdx = loopOptions(options);
+            if (amIdx < 0) return;
+        }
 
-        int amIdx = loopOptions(options);
-        if (amIdx < 0) return;
-        am = (amIdx == 1) ? 12 : 0;
+        if (bruceConfig.clock24hr) {
+            hr24 = hrSel;
+        } else {
+            int hr12 = hrSel + 1; // 1..12
+            if (amIdx == 0) { // AM
+                hr24 = (hr12 == 12) ? 0 : hr12;
+            } else { // PM
+                hr24 = (hr12 == 12) ? 12 : (hr12 + 12);
+            }
+        }
+
+        int year = CURRENT_YEAR;
+        int month = 1;
+        int day = 1;
+
+        options.clear();
+        int startYear = CURRENT_YEAR - 5;
+        int endYear = CURRENT_YEAR + 5;
+        for (int y = startYear; y <= endYear; y++) {
+            options.push_back({String(y).c_str(), [&]() { delay(1); }});
+        }
+        int yIdx = loopOptions(options, MENU_TYPE_SUBMENU, "Set Year");
+        if (yIdx < 0) return;
+        year = startYear + yIdx;
+
+        options.clear();
+        for (int m = 1; m <= 12; m++) {
+            String tmp = String(m < 10 ? "0" : "") + String(m);
+            options.push_back({tmp.c_str(), [&]() { delay(1); }});
+        }
+        int mIdx = loopOptions(options, MENU_TYPE_SUBMENU, "Set Month");
+        if (mIdx < 0) return;
+        month = mIdx + 1;
+
+        options.clear();
+        int dim = daysInMonth(year, month);
+        for (int d = 1; d <= dim; d++) {
+            String tmp = String(d < 10 ? "0" : "") + String(d);
+            options.push_back({tmp.c_str(), [&]() { delay(1); }});
+        }
+        int dIdx = loopOptions(options, MENU_TYPE_SUBMENU, "Set Day");
+        if (dIdx < 0) return;
+        day = dIdx + 1;
 
 #if defined(HAS_RTC)
-        TimeStruct.Hours = hr + am;
+        RTC_DateTypeDef DateStruct;
+        TimeStruct.Hours = hr24;
         TimeStruct.Minutes = mn;
         TimeStruct.Seconds = 0;
         _rtc.SetTime(&TimeStruct);
+        DateStruct.Date = day;
+        DateStruct.Month = month;
+        DateStruct.Year = year;
+        DateStruct.WeekDay = 0;
+        _rtc.SetDate(&DateStruct);
         _rtc.GetTime(&_time);
         _rtc.GetDate(&_date);
 
@@ -924,14 +991,14 @@ void setClock() {
         timeinfo.tm_sec = _time.Seconds;
         timeinfo.tm_min = _time.Minutes;
         timeinfo.tm_hour = _time.Hours;
-        timeinfo.tm_mday = _date.Date;
-        timeinfo.tm_mon = _date.Month > 0 ? _date.Month - 1 : 0;
-        timeinfo.tm_year = _date.Year >= 1900 ? _date.Year - 1900 : 0;
+        timeinfo.tm_mday = day;
+        timeinfo.tm_mon = month - 1;
+        timeinfo.tm_year = year - 1900;
         time_t epoch = mktime(&timeinfo);
         struct timeval tv = {.tv_sec = epoch};
         settimeofday(&tv, nullptr);
 #else
-        rtc.setTime(0, mn, hr + am, 20, 06, CURRENT_YEAR); // send me a gift, @Pirata!
+        rtc.setTime(0, mn, hr24, day, month, year);
         struct tm t = rtc.getTimeStruct();
         time_t epoch = mktime(&t);
         struct timeval tv = {.tv_sec = epoch};

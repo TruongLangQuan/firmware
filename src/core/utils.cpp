@@ -67,10 +67,16 @@ void updateClockTimezone() {
 #if defined(HAS_RTC)
     struct tm *timeinfo = localtime(&localTime);
     RTC_TimeTypeDef TimeStruct;
+    RTC_DateTypeDef DateStruct;
     TimeStruct.Hours = timeinfo->tm_hour;
     TimeStruct.Minutes = timeinfo->tm_min;
     TimeStruct.Seconds = timeinfo->tm_sec;
+    DateStruct.Date = timeinfo->tm_mday;
+    DateStruct.Month = timeinfo->tm_mon + 1;
+    DateStruct.Year = timeinfo->tm_year + 1900;
+    DateStruct.WeekDay = timeinfo->tm_wday;
     _rtc.SetTime(&TimeStruct);
+    _rtc.SetDate(&DateStruct);
     updateTimeStr(_rtc.getTimeStruct());
 #else
     rtc.setTime(localTime);

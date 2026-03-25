@@ -17,6 +17,7 @@
 
 #include <MD5Builder.h>
 #include <algorithm> // for std::sort
+#include <vector>
 #include <esp_rom_crc.h>
 
 // SPIClass sdcardSPI;
@@ -862,18 +863,162 @@ String loopSD(FS &fs, bool filePicker, String allowed_ext, String rootPath) {
 **  Function: viewFile
 **  Display file content
 **********************************************************************/
+namespace {
+int utf8CharLen(uint8_t c) {
+    if ((c & 0x80) == 0) return 1;
+    if ((c & 0xE0) == 0xC0) return 2;
+    if ((c & 0xF0) == 0xE0) return 3;
+    if ((c & 0xF8) == 0xF0) return 4;
+    return 1;
+}
+
+void wrapLineMono(const String &line, int maxChars, std::vector<String> &out) {
+    if (maxChars <= 0) {
+        out.push_back(line);
+        return;
+    }
+    if (line.length() == 0) {
+        out.push_back("");
+        return;
+    }
+
+    int i = 0;
+    String current = "";
+    current.reserve(maxChars * 3);
+    int count = 0;
+    int lastSpacePos = -1;
+
+    while (i < (int)line.length()) {
+        int clen = utf8CharLen((uint8_t)line[i]);
+        char chbuf[5] = {0};
+        for (int k = 0; k < clen && (i + k) < (int)line.length(); k++) chbuf[k] = line[i + k];
+
+        if (count >= maxChars && current.length()) {
+            String part = current;
+            String rest = "";
+            if (lastSpacePos > 0 && lastSpacePos < (int)current.length()) {
+                part = current.substring(0, lastSpacePos);
+                rest = current.substring(lastSpacePos + 1);
+            }
+            part.trim();
+            if (part.length()) out.push_back(part);
+            current = rest;
+            count = 0;
+            lastSpacePos = -1;
+            int tmpIdx = 0;
+            while (tmpIdx < (int)current.length()) {
+                int cclen = utf8CharLen((uint8_t)current[tmpIdx]);
+                count++;
+                tmpIdx += cclen;
+            }
+        }
+
+        current += chbuf;
+        if (clen == 1 && chbuf[0] == ' ') lastSpacePos = current.length() - 1;
+        count++;
+        i += clen;
+    }
+
+    if (current.length()) {
+        current.trim();
+        if (current.length()) out.push_back(current);
+    }
+}
+
+bool getTxtPage(FS &fs, const char *path, int top, int maxLines, int maxChars, std::vector<String> &out) {
+    out.clear();
+    out.reserve(maxLines + 2);
+    File f = fs.open(path, FILE_READ);
+    if (!f) return false;
+
+    int wrappedIndex = 0;
+    while (f.available()) {
+        String line = f.readStringUntil('\n');
+        line.replace("\r", "");
+        std::vector<String> wrapped;
+        int approx = (line.length() / maxChars) + 1;
+        if (approx < 2) approx = 2;
+        if (approx > 1000) approx = 1000;
+        wrapped.reserve(approx);
+        wrapLineMono(line, maxChars, wrapped);
+
+        for (size_t i = 0; i < wrapped.size(); i++) {
+            if (wrappedIndex >= top && (int)out.size() < maxLines) out.push_back(wrapped[i]);
+            wrappedIndex++;
+            if ((int)out.size() >= maxLines) break;
+        }
+        if ((int)out.size() >= maxLines) break;
+    }
+
+    f.close();
+    return true;
+}
+} // namespace
+
 void viewFile(FS fs, String filepath) {
     File file = fs.open(filepath, FILE_READ);
     if (!file) return;
-
-    ScrollableTextArea area = ScrollableTextArea("VIEW FILE");
-    idk_vi_font_enable();
-    area.rebuildLayout();
-    area.fromFile(file);
-
     file.close();
 
-    area.show();
+    idk_vi_font_enable();
+    tft.setRotation(bruceConfigPins.rotation);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextWrap(false, false);
+
+    int top = 0;
+    int contentY = 2;
+    int lineH = tft.fontHeight();
+    if (lineH < 12) lineH = 12;
+    int maxWidth = tftWidth - 12;
+    int charW = tft.textWidth("W");
+    if (charW <= 0) charW = 6;
+    int maxChars = maxWidth / charW;
+    if (maxChars < 8) maxChars = 8;
+    int maxLines = (tftHeight - 2 - contentY) / lineH;
+    if (maxLines < 1) maxLines = 1;
+
+    std::vector<String> page;
+    getTxtPage(fs, filepath.c_str(), top, maxLines, maxChars, page);
+
+    auto drawPage = [&]() {
+        tft.fillScreen(bruceConfig.bgColor);
+        tft.fillRect(0, 0, tftWidth, tftHeight, bruceConfig.bgColor);
+        int y = contentY + 2;
+        tft.setTextColor(TFT_WHITE, bruceConfig.bgColor);
+        for (int i = 0; i < maxLines && i < (int)page.size(); i++) {
+            tft.setCursor(6, y + i * lineH);
+            tft.print(page[i]);
+        }
+    };
+
+    drawPage();
+    while (true) {
+        InputHandler();
+        if (check(SelPress) || check(EscPress)) break;
+        if (check(PrevPress)) {
+            top++;
+            std::vector<String> next;
+            getTxtPage(fs, filepath.c_str(), top, maxLines, maxChars, next);
+            if (!next.empty()) {
+                page = next;
+                drawPage();
+            } else {
+                top--;
+            }
+        }
+        if (check(NextPress)) {
+            top += maxLines;
+            std::vector<String> next;
+            getTxtPage(fs, filepath.c_str(), top, maxLines, maxChars, next);
+            if (!next.empty()) {
+                page = next;
+                drawPage();
+            } else {
+                top -= maxLines;
+            }
+        }
+        delay(5);
+    }
     idk_vi_font_disable();
 }
 

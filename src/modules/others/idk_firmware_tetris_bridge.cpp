@@ -1,6 +1,7 @@
 #include "idk_apps.h"
 #include <globals.h>
 #include <interface.h>
+#include <interface.h>
 #include <Preferences.h>
 #include <string.h>
 
@@ -73,7 +74,6 @@ void idk_firmware_run_tetris() {
     int level = 1;
     uint32_t dropInterval = 500;
     int high = getScore("tetris_h");
-    bool rotateLatch = false;
     bool gameOver = false;
     bool exitGame = false;
 
@@ -156,37 +156,56 @@ void idk_firmware_run_tetris() {
         sy = 0;
     };
 
+    static bool prevDownLast = false;
+    static bool nextDownLast = false;
+    static bool selDownLast = false;
+
     while (true) {
         InputHandler();
-        bool prevHeld = PrevPress;
-        bool nextHeld = NextPress;
-        bool selHeld = SelPress;
+        bool prevHeld = (digitalRead(UP_BTN) == LOW);
+        bool nextHeld = (digitalRead(DW_BTN) == LOW);
+        bool selHeld = (digitalRead(SEL_BTN) == LOW);
+        bool prevEdge = prevHeld && !prevDownLast;
+        bool nextEdge = nextHeld && !nextDownLast;
+        bool selEdge = selHeld && !selDownLast;
+
+        prevDownLast = prevHeld;
+        nextDownLast = nextHeld;
+        selDownLast = selHeld;
 
         if (prevHeld && selHeld) {
             exitGame = true;
             break;
         }
 
-        if (check(PrevPress)) {
-            if (canPlace(sx - 1, sy, shape)) sx--;
+        bool didHardDrop = false;
+        if (selHeld && nextEdge) {
+            while (canPlace(sx, sy + 1, shape)) sy++;
+            lockPiece();
+            spawn();
+            if (!canPlace(sx, sy, shape)) {
+                gameOver = true;
+                break;
+            }
+            didHardDrop = true;
+        } else {
+            if (prevEdge) {
+                if (canPlace(sx - 1, sy, shape)) sx--;
+            }
+            if (nextEdge) {
+                if (canPlace(sx + 1, sy, shape)) sx++;
+            }
+            if (selEdge && !nextHeld) {
+                int tmp[4][4];
+                memcpy(tmp, shape, sizeof(tmp));
+                rotateShape(tmp);
+                if (canPlace(sx, sy, tmp)) memcpy(shape, tmp, sizeof(tmp));
+            }
         }
-        if (check(NextPress)) {
-            if (canPlace(sx + 1, sy, shape)) sx++;
-        }
-
-        bool both = prevHeld && nextHeld;
-        if (both && !rotateLatch) {
-            int tmp[4][4];
-            memcpy(tmp, shape, sizeof(tmp));
-            rotateShape(tmp);
-            if (canPlace(sx, sy, tmp)) memcpy(shape, tmp, sizeof(tmp));
-            rotateLatch = true;
-        }
-        if (!both) rotateLatch = false;
 
         uint32_t now = millis();
-        uint32_t interval = selHeld ? 80 : dropInterval;
-        if (now - lastDrop > interval) {
+        uint32_t interval = nextHeld ? 80 : dropInterval;
+        if (!didHardDrop && now - lastDrop > interval) {
             lastDrop = now;
             if (canPlace(sx, sy + 1, shape)) sy++;
             else {

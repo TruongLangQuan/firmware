@@ -30,6 +30,8 @@ ScrollableTextArea::~ScrollableTextArea() {
 }
 
 void ScrollableTextArea::setup() {
+    uint8_t oldDatum = _scrollBuffer.getTextDatum();
+    _scrollBuffer.setTextDatum(TL_DATUM);
     _scrollBuffer.setTextColor(bruceConfig.priColor);
     _scrollBuffer.setTextSize(_fontSize);
     _scrollBuffer.fillRect(_startX, _startY, _width, _height, bruceConfig.bgColor);
@@ -37,6 +39,7 @@ void ScrollableTextArea::setup() {
     _maxCharactersPerLine = floor(_width / _scrollBuffer.textWidth("w", _fontSize));
     _pixelsPerLine = _scrollBuffer.fontHeight() + 2;
     _maxVisibleLines = floor(_height / _pixelsPerLine);
+    _scrollBuffer.setTextDatum(oldDatum);
 }
 
 void ScrollableTextArea::scrollUp() {
@@ -167,7 +170,9 @@ void ScrollableTextArea::draw(bool force) {
     _scrollBuffer.fillRect(_startX, _startY, _width, _height, bruceConfig.bgColor);
     _scrollBuffer.setTextColor(bruceConfig.priColor);
     uint8_t prevTextSize = tft.getTextSize();
+    uint8_t prevTextDatum = tft.getTextDatum();
     tft.setTextSize(FP);
+    tft.setTextDatum(TL_DATUM);
 
     uint16_t yOffset = 0;
     size_t lines = 0;
@@ -181,7 +186,7 @@ void ScrollableTextArea::draw(bool force) {
 
     int32_t tmpHeight = _height;
     // if there is text below
-    if (linesBuffer.size() - firstVisibleLine >= _maxVisibleLines) {
+    if (linesBuffer.size() - firstVisibleLine > _maxVisibleLines) {
         _scrollBuffer.drawString("...", 0 + _startX, _startY + _height - _pixelsPerLine);
         tmpHeight -= _pixelsPerLine;
         lines++;
@@ -196,6 +201,7 @@ void ScrollableTextArea::draw(bool force) {
     }
 
     lastVisibleLine = firstVisibleLine + lines;
+    tft.setTextDatum(prevTextDatum);
     tft.setTextSize(prevTextSize);
 
     _redraw = false;

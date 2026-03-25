@@ -1,0 +1,14 @@
+[Unit]
+Description=MJPEG Server for ESP32 Video Stream
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/truonglangquan/idk-code/idk-firmware-idk/other/video_stream/server
+ExecStart=/home/truonglangquan/idk-code/idk-firmware-idk/other/video_stream/server/run.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
