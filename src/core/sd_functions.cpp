@@ -994,16 +994,18 @@ void viewFile(FS fs, String filepath) {
     drawPage();
     while (true) {
         InputHandler();
-        if (check(SelPress) || check(EscPress)) break;
+        if (check(SelPress)) break;
         if (check(PrevPress)) {
-            top++;
-            std::vector<String> next;
-            getTxtPage(fs, filepath.c_str(), top, maxLines, maxChars, next);
-            if (!next.empty()) {
-                page = next;
-                drawPage();
-            } else {
-                top--;
+            int newTop = top - maxLines;
+            if (newTop < 0) newTop = 0;
+            if (newTop != top) {
+                std::vector<String> next;
+                getTxtPage(fs, filepath.c_str(), newTop, maxLines, maxChars, next);
+                if (!next.empty()) {
+                    top = newTop;
+                    page = next;
+                    drawPage();
+                }
             }
         }
         if (check(NextPress)) {
